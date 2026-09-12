@@ -14,6 +14,7 @@ import { DashboardContent } from "@/components/DashboardContent";
 import { TaskList } from "@/components/TaskList";
 import { AddTaskForm } from "@/components/AddTaskForm";
 import { EditTaskForm } from "@/components/EditTaskForm";
+import { ReminderSystem } from "@/components/ReminderSystem";
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -150,6 +151,9 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-8">
             <DashboardContent tasks={tasks} />
+
+            {/* Reminder System */}
+            <ReminderSystem tasks={tasks} />
 
             {/* Add Task Button */}
             <div className="flex justify-end">
