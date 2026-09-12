@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, LogOut, LayoutDashboard, ListTodo } from "lucide-react";
+import { Loader2, Plus, LogOut, LayoutDashboard, ListTodo, Calendar } from "lucide-react";
 import type { Task, TaskStatus } from "@/types";
 import {
   getTasks,
@@ -156,6 +156,17 @@ export default function Dashboard() {
                   {tasks.filter((t) => t.status !== "Completed").length}
                 </span>
               )}
+            </button>
+            <button
+              onClick={() => navigate("/calendar")}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                false
+                  ? "border-[#8b7355] text-[#3d3429]"
+                  : "border-transparent text-[#8b7355] hover:text-[#5a4d3e] hover:border-[#d4c9ba]"
+              }`}
+            >
+              <Calendar className="h-4 w-4" />
+              Calendar
             </button>
           </div>
         </div>

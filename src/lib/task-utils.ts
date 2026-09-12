@@ -61,6 +61,8 @@ function todayUTC(): Date {
   ));
 }
 
+export { isSameUTCDay };
+
 export function calculateUrgency(dueDate: string, status: string): UrgencyLevel {
   if (status === "Completed") return "completed";
 
