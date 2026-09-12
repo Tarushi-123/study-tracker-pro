@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { User, AuthError } from "@supabase/supabase-js";
 
 export function useAuth() {
@@ -8,6 +8,11 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setIsLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -29,6 +34,8 @@ export function useAuth() {
 
   const signUp = useCallback(
     async (email: string, password: string, name: string) => {
+      if (!isSupabaseConfigured)
+        return { error: "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY." };
       setIsLoading(true);
       try {
         const { data, error } = await supabase.auth.signUp({
@@ -61,6 +68,8 @@ export function useAuth() {
   );
 
   const signIn = useCallback(async (email: string, password: string) => {
+    if (!isSupabaseConfigured)
+      return { error: "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY." };
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -80,6 +89,7 @@ export function useAuth() {
   }, []);
 
   const signOut = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signOut();

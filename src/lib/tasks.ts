@@ -1,7 +1,8 @@
-import { supabase } from "./supabase";
+import { supabase, isSupabaseConfigured } from "./supabase";
 import type { Task, TaskType, TaskPriority, TaskStatus } from "@/types";
 
 export async function getTasks(): Promise<{ data: Task[] | null; error: string | null }> {
+  if (!isSupabaseConfigured) return { data: [], error: null };
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
@@ -22,6 +23,7 @@ export async function createTask(task: {
   due_date: string;
   priority: TaskPriority;
 }): Promise<{ data: Task | null; error: string | null }> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -64,6 +66,7 @@ export async function updateTask(
     status: TaskStatus;
   }>,
 ): Promise<{ data: Task | null; error: string | null }> {
+  if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
   const { data, error } = await supabase
     .from("tasks")
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -79,6 +82,7 @@ export async function updateTask(
 }
 
 export async function deleteTask(taskId: string): Promise<{ error: string | null }> {
+  if (!isSupabaseConfigured) return { error: "Supabase is not configured." };
   const { error } = await supabase.from("tasks").delete().eq("id", taskId);
 
   if (error) {
