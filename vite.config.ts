@@ -2,15 +2,27 @@ import { vlyPlugin } from "@vly-ai/integrations";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { readFileSync } from "fs";
 import { defineConfig } from "vite";
+
+// Read Supabase credentials from env.json (created via Keys/API keys tab)
+// This bypasses the hosting platform's VITE_ prefix encryption.
+let envConfig: Record<string, string> = {};
+try {
+  envConfig = JSON.parse(readFileSync(path.resolve(__dirname, "env.json"), "utf-8"));
+} catch {
+  // env.json not found or invalid — will use empty strings
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), vlyPlugin(), tailwindcss()],
-  // Expose env vars prefixed with VITE_ OR SUPABASE_ to the client.
-  // The hosting platform may encrypt VITE_ prefixed vars, so we also
-  // expose SUPABASE_ prefixed vars (set in Backend settings) as a fallback.
-  envPrefix: ['VITE_', 'SUPABASE_'],
+  // Inject Supabase credentials into the frontend at build/dev time.
+  // Reads from env.json at the project root (plaintext, not encrypted).
+  define: {
+    "import.meta.env.SUPABASE_URL": JSON.stringify(envConfig.SUPABASE_URL || ""),
+    "import.meta.env.SUPABASE_ANON_KEY": JSON.stringify(envConfig.SUPABASE_ANON_KEY || ""),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
