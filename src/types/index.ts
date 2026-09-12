@@ -29,6 +29,7 @@ export interface TaskStats {
   inProgress: number;
   completed: number;
   dueToday: number;
+  overdue: number;
   upcomingTests: number;
 }
 

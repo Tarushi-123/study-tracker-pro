@@ -1,6 +1,7 @@
 import {
   isToday,
   isTomorrow,
+  isPast,
   differenceInDays,
   parseISO,
   startOfDay,
@@ -100,6 +101,10 @@ export function calculateTaskStats(tasks: Task[]): TaskStats {
       const due = parseISO(t.due_date);
       return isToday(due) && t.status !== "completed";
     }).length,
+    overdue: tasks.filter((t) => {
+      const due = parseISO(t.due_date);
+      return isPast(due) && !isToday(due) && t.status !== "completed";
+    }).length,
     upcomingTests: tasks.filter((t) => {
       const due = parseISO(t.due_date);
       return t.type === "class_test" && due >= today && t.status !== "completed";
@@ -127,6 +132,25 @@ export function getUpcomingTasks(tasks: Task[], limit: number = 5): Task[] {
   const now = startOfDay(new Date());
   return tasks
     .filter((t) => t.status !== "completed" && parseISO(t.due_date) >= now)
+    .sort((a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime())
+    .slice(0, limit);
+}
+
+export function getOverdueTasks(tasks: Task[], limit: number = 5): Task[] {
+  return tasks
+    .filter((t) => t.status !== "completed" && isPast(parseISO(t.due_date)) && !isToday(parseISO(t.due_date)))
+    .sort((a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime())
+    .slice(0, limit);
+}
+
+export function getDueTodayTasks(tasks: Task[]): Task[] {
+  return tasks.filter((t) => t.status !== "completed" && isToday(parseISO(t.due_date)));
+}
+
+export function getUpcomingTests(tasks: Task[], limit: number = 5): Task[] {
+  const now = startOfDay(new Date());
+  return tasks
+    .filter((t) => t.type === "class_test" && t.status !== "completed" && parseISO(t.due_date) >= now)
     .sort((a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime())
     .slice(0, limit);
 }
