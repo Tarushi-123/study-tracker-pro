@@ -50,7 +50,7 @@ export function EditTaskForm({
   const [subject, setSubject] = useState("");
   const [type, setType] = useState<TaskType>("assignment");
   const [dueDate, setDueDate] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("medium");
+  const [priority, setPriority] = useState<TaskPriority>("Medium");
   const [status, setStatus] = useState<TaskStatus>("not_started");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -195,9 +195,9 @@ export function EditTaskForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
                 </SelectContent>
               </Select>
             </div>
