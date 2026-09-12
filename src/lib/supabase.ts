@@ -13,12 +13,18 @@ const urlIsValid =
   (supabaseUrl.startsWith("https://") || supabaseUrl.startsWith("http://")) &&
   supabaseUrl.includes(".supabase.co");
 
+// Safe diagnostic — logs presence/format only, never exposes actual values
+console.log(
+  "[StudyPro] Env check →",
+  `VITE_SUPABASE_URL: ${rawUrl === undefined ? "❌ MISSING (undefined)" : rawUrl === "" ? "❌ EMPTY STRING" : supabaseUrl && urlIsValid ? "✅ valid URL" : `⚠️ present but invalid (${rawUrl.length} chars, starts with "${rawUrl.slice(0, 8)}...")`}`,
+  `| VITE_SUPABASE_ANON_KEY: ${rawKey === undefined ? "❌ MISSING (undefined)" : rawKey === "" ? "❌ EMPTY STRING" : supabaseAnonKey && supabaseAnonKey.length > 20 ? "✅ present" : "⚠️ present but looks too short"}`,
+);
+
 if (supabaseUrl && !urlIsValid) {
   console.error(
     `[StudyPro] VITE_SUPABASE_URL is set but not a valid Supabase Project URL.\n` +
-      `  Received: "${supabaseUrl.slice(0, 60)}${supabaseUrl.length > 60 ? "..." : ""}"\n` +
-      `  Expected: https://<project-ref>.supabase.co\n` +
-      `  ⚠️  This looks like it might be the API key. Make sure the URL field has the Project URL, not the anon key.`,
+      `  Expected format: https://<project-ref>.supabase.co\n` +
+      `  ⚠️  This looks like it might be the wrong value. Make sure you pasted the Project URL, not the anon key.`,
   );
 }
 
