@@ -7,6 +7,18 @@ import { defineConfig } from "vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), vlyPlugin(), tailwindcss()],
+  // Inject backend env vars (SUPABASE_URL, SUPABASE_ANON_KEY) into the
+  // frontend as import.meta.env.VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.
+  // This lets the user store plaintext keys in Backend settings (no VITE_
+  // prefix, so they are NOT encrypted by the hosting platform) and still
+  // have them available to the client via import.meta.env.VITE_*.
+  // Priority: process.env.SUPABASE_* (backend) > import.meta.env.VITE_* (frontend)
+  define: {
+    'import.meta.env.VITE_SUPABASE_URL':
+      JSON.stringify(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY':
+      JSON.stringify(process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

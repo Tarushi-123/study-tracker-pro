@@ -1,14 +1,16 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// ─── Read directly from Vite's frontend environment ──────────────────────────
-// VITE_ prefixed variables are the ONLY way Vite exposes env vars to the client.
-// These must be set in .env.local or injected by the hosting platform as
-// PLAINTEXT values — not encrypted ciphertext.
+// ─── Read from Vite frontend environment ─────────────────────────────────────
+// import.meta.env.VITE_SUPABASE_URL and import.meta.env.VITE_SUPABASE_ANON_KEY
+// are populated by two sources (checked in this order):
+//   1. vite.config.ts `define` → injects from process.env.SUPABASE_URL / SUPABASE_ANON_KEY
+//      (backend plaintext values, not encrypted by the hosting platform)
+//   2. Vite's built-in env loading → reads VITE_SUPABASE_URL from .env.local or
+//      the hosting platform's VITE_-prefixed injection (may be encrypted)
 const rawUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 // ─── Normalize ───────────────────────────────────────────────────────────────
-// Trim whitespace and strip surrounding quotes that some env tools add.
 const supabaseUrl = rawUrl?.trim().replace(/^['"]|['"]$/g, "");
 const supabaseAnonKey = rawKey?.trim().replace(/^['"]|['"]$/g, "");
 
@@ -23,40 +25,31 @@ const keyIsValid =
   supabaseAnonKey.length > 50 &&
   supabaseAnonKey.startsWith("eyJ");
 
-// ─── Diagnostic (safe — never prints actual values) ──────────────────────────
-function logStatus(label: string, raw: string | undefined, isValid: boolean) {
-  if (raw === undefined) {
-    console.error(`[StudyPro] ${label}: ❌ NOT SET — variable is undefined.`);
-  } else if (raw === "") {
-    console.error(`[StudyPro] ${label}: ❌ EMPTY STRING`);
-  } else if (isValid) {
-    console.log(`[StudyPro] ${label}: ✅ valid`);
-  } else {
-    console.error(
-      `[StudyPro] ${label}: ❌ INVALID — received ${raw.length} chars starting with "${raw.slice(0, 8)}...". ` +
-        `Expected ${label === "VITE_SUPABASE_URL" ? "https://<ref>.supabase.co" : "eyJ... (JWT from Supabase)"}. ` +
-        `⚠️  The hosting platform may be injecting encrypted values instead of plaintext.`,
+// ─── Safe diagnostic (never prints actual values) ────────────────────────────
+if (urlIsValid && keyIsValid) {
+  console.log("[StudyPro] Supabase: ✅ connected");
+} else {
+  const issues: string[] = [];
+  if (!urlIsValid) {
+    issues.push(
+      rawUrl === undefined
+        ? "VITE_SUPABASE_URL is undefined (not set in env or Backend settings)"
+        : `VITE_SUPABASE_URL is invalid (${rawUrl.length} chars, starts with "${rawUrl.slice(0, 8)}...")`,
     );
   }
-}
-
-logStatus("VITE_SUPABASE_URL", rawUrl, urlIsValid);
-logStatus("VITE_SUPABASE_ANON_KEY", rawKey, keyIsValid);
-
-// ─── Throw on misconfiguration ───────────────────────────────────────────────
-if (!urlIsValid || !keyIsValid) {
-  const missing: string[] = [];
-  if (!urlIsValid) missing.push("VITE_SUPABASE_URL");
-  if (!keyIsValid) missing.push("VITE_SUPABASE_ANON_KEY");
-
+  if (!keyIsValid) {
+    issues.push(
+      rawKey === undefined
+        ? "VITE_SUPABASE_ANON_KEY is undefined (not set in env or Backend settings)"
+        : `VITE_SUPABASE_ANON_KEY is invalid (${rawKey.length} chars, starts with "${rawKey.slice(0, 6)}...")`,
+    );
+  }
   console.error(
-    `[StudyPro] Initialization failed — invalid or missing environment variables: ${missing.join(", ")}.\n` +
-      `  How to fix:\n` +
-      `  1. Go to Supabase Dashboard → Project Settings → API\n` +
-      `  2. Copy Project URL (https://xxxxx.supabase.co) → set as VITE_SUPABASE_URL\n` +
-      `  3. Copy anon public key (eyJ...) → set as VITE_SUPABASE_ANON_KEY\n` +
-      `  4. Make sure the hosting platform injects PLAINTEXT values, not encrypted ciphertext.\n` +
-      `  5. Restart the Vite dev server after changing env vars.`,
+    `[StudyPro] Supabase: ❌ Configuration error\n` +
+      issues.map((i) => `  • ${i}`).join("\n") + "\n" +
+      `  Fix: Set SUPABASE_URL and SUPABASE_ANON_KEY in Backend settings (plaintext).\n` +
+      `  These are injected into the frontend via vite.config.ts → define.\n` +
+      `  Get values from: Supabase Dashboard → Project Settings → API`,
   );
 }
 
