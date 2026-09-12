@@ -74,7 +74,7 @@ export function TaskCard({
               variant="outline"
               className={`text-[10px] sm:text-xs font-medium ${getTypeClasses(task.type)}`}
             >
-              {task.type === "assignment" ? "📝 Assignment" : "🧪 Class Test"}
+              {task.type === "Assignment" ? "📝 Assignment" : "🧪 Class Test"}
             </Badge>
             <Badge
               variant="outline"

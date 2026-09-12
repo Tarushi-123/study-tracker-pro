@@ -132,9 +132,9 @@ export function getPriorityClasses(priority: string): string {
 
 export function getTypeClasses(type: string): string {
   switch (type) {
-    case "assignment":
+    case "Assignment":
       return "bg-violet-100 text-violet-700 border-violet-200";
-    case "class_test":
+    case "Class Test":
       return "bg-cyan-100 text-cyan-700 border-cyan-200";
     default:
       return "bg-gray-100 text-gray-700 border-gray-200";
@@ -157,7 +157,7 @@ export function calculateTaskStats(tasks: Task[]): TaskStats {
     }).length,
     upcomingTests: tasks.filter((t) => {
       return (
-        t.type === "class_test" &&
+        t.type === "Class Test" &&
         t.status !== "Completed" &&
         !isBeforeUTCDay(t.due_date, now)
       );
@@ -217,7 +217,7 @@ export function getUpcomingTests(tasks: Task[], limit: number = 5): Task[] {
   return tasks
     .filter(
       (t) =>
-        t.type === "class_test" &&
+        t.type === "Class Test" &&
         t.status !== "Completed" &&
         !isBeforeUTCDay(t.due_date, now),
     )

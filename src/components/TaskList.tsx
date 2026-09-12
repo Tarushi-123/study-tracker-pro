@@ -90,8 +90,8 @@ export function TaskList({
               </SelectTrigger>
               <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="assignment">Assignment</SelectItem>
-                <SelectItem value="class_test">Class Test</SelectItem>
+                <SelectItem value="Assignment">Assignment</SelectItem>
+                <SelectItem value="Class Test">Class Test</SelectItem>
               </SelectContent>
             </Select>
 

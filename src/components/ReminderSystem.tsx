@@ -162,8 +162,8 @@ export function ReminderSystem({ tasks }: ReminderSystemProps) {
                       </p>
                       <p className="text-xs text-[#8b7355]">
                         {task.subject} •{" "}
-                        {task.type === "assignment" ? "📝" : "🧪"}{" "}
-                        {task.type === "assignment" ? "Assignment" : "Class Test"}
+                        {task.type === "Assignment" ? "📝" : "🧪"}{" "}
+                        {task.type === "Assignment" ? "Assignment" : "Class Test"}
                       </p>
                     </div>
                     <Badge

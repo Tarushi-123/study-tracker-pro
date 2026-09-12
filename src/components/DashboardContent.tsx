@@ -126,8 +126,8 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
                           variant="outline"
                           className={`text-[10px] shrink-0 ${getTypeClasses(task.type)}`}
                         >
-                          {task.type === "assignment" ? "📝" : "🧪"}{" "}
-                          {task.type === "assignment" ? "Assignment" : "Test"}
+                          {task.type === "Assignment" ? "📝" : "🧪"}{" "}
+                          {task.type === "Assignment" ? "Assignment" : "Class Test"}
                         </Badge>
                       </div>
                       <p className="text-xs text-[#8b7355] mt-0.5">
@@ -459,7 +459,7 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
                         variant="outline"
                         className={`text-[10px] ${getTypeClasses(task.type)}`}
                       >
-                        {task.type === "assignment" ? "📝" : "🧪"}
+                        {task.type === "Assignment" ? "📝" : "🧪"}
                       </Badge>
                       <Badge
                         variant="outline"

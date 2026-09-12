@@ -39,7 +39,7 @@ export async function createTask(task: {
       title: task.title,
       description: task.description,
       subject: task.subject,
-      type: task.type,
+      type: task.type as "Assignment" | "Class Test",
       due_date: task.due_date,
       priority: task.priority,
       status: "Not Started" as TaskStatus,

@@ -1,4 +1,4 @@
-export type TaskType = "assignment" | "class_test";
+export type TaskType = "Assignment" | "Class Test";
 export type TaskPriority = "Low" | "Medium" | "High";
 export type TaskStatus = "Not Started" | "In Progress" | "Completed";
 
