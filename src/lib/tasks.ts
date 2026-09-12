@@ -42,7 +42,7 @@ export async function createTask(task: {
       type: task.type,
       due_date: task.due_date,
       priority: task.priority,
-      status: "not_started" as TaskStatus,
+      status: "Not Started" as TaskStatus,
     })
     .select()
     .single();

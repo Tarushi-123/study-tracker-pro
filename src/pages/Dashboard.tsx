@@ -153,7 +153,7 @@ export default function Dashboard() {
               Tasks
               {tasks.length > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 text-[10px] font-semibold bg-[#e8dfd2] text-[#8b7355] rounded-full">
-                  {tasks.filter((t) => t.status !== "completed").length}
+                  {tasks.filter((t) => t.status !== "Completed").length}
                 </span>
               )}
             </button>

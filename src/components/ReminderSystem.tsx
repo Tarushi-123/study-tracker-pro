@@ -24,7 +24,7 @@ interface UrgencyGroup {
 
 export function ReminderSystem({ tasks }: ReminderSystemProps) {
   const urgencyGroups = useMemo(() => {
-    const activeTasks = tasks.filter((t) => t.status !== "completed");
+    const activeTasks = tasks.filter((t) => t.status !== "Completed");
 
     const groups: Record<UrgencyLevel, Task[]> = {
       overdue: [],

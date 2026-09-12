@@ -1,6 +1,6 @@
 export type TaskType = "assignment" | "class_test";
 export type TaskPriority = "Low" | "Medium" | "High";
-export type TaskStatus = "not_started" | "in_progress" | "completed";
+export type TaskStatus = "Not Started" | "In Progress" | "Completed";
 
 export interface Profile {
   id: string;

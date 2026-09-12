@@ -51,7 +51,7 @@ export function EditTaskForm({
   const [type, setType] = useState<TaskType>("assignment");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("Medium");
-  const [status, setStatus] = useState<TaskStatus>("not_started");
+  const [status, setStatus] = useState<TaskStatus>("Not Started");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -229,9 +229,9 @@ export function EditTaskForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
-                  <SelectItem value="not_started">Not Started</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="Not Started">Not Started</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>

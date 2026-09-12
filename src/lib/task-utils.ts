@@ -62,7 +62,7 @@ function todayUTC(): Date {
 }
 
 export function calculateUrgency(dueDate: string, status: string): UrgencyLevel {
-  if (status === "completed") return "completed";
+  if (status === "Completed") return "completed";
 
   const now = todayUTC();
   const due = parseISO(dueDate);
@@ -119,11 +119,11 @@ export function getUrgencyLabel(urgency: UrgencyLevel): string {
 
 export function getPriorityClasses(priority: string): string {
   switch (priority) {
-    case "high":
+    case "High":
       return "bg-rose-100 text-rose-700 border-rose-200";
-    case "medium":
+    case "Medium":
       return "bg-amber-100 text-amber-700 border-amber-200";
-    case "low":
+    case "Low":
       return "bg-sky-100 text-sky-700 border-sky-200";
     default:
       return "bg-gray-100 text-gray-700 border-gray-200";
@@ -146,19 +146,19 @@ export function calculateTaskStats(tasks: Task[]): TaskStats {
 
   return {
     total: tasks.length,
-    pending: tasks.filter((t) => t.status !== "completed").length,
-    inProgress: tasks.filter((t) => t.status === "in_progress").length,
-    completed: tasks.filter((t) => t.status === "completed").length,
+    pending: tasks.filter((t) => t.status !== "Completed").length,
+    inProgress: tasks.filter((t) => t.status === "In Progress").length,
+    completed: tasks.filter((t) => t.status === "Completed").length,
     dueToday: tasks.filter((t) => {
-      return isSameUTCDay(t.due_date, now) && t.status !== "completed";
+      return isSameUTCDay(t.due_date, now) && t.status !== "Completed";
     }).length,
     overdue: tasks.filter((t) => {
-      return isBeforeUTCDay(t.due_date, now) && t.status !== "completed";
+      return isBeforeUTCDay(t.due_date, now) && t.status !== "Completed";
     }).length,
     upcomingTests: tasks.filter((t) => {
       return (
         t.type === "class_test" &&
-        t.status !== "completed" &&
+        t.status !== "Completed" &&
         !isBeforeUTCDay(t.due_date, now)
       );
     }).length,
@@ -173,7 +173,7 @@ export function getSubjectProgress(tasks: Task[]): Record<string, { total: numbe
       progress[task.subject] = { total: 0, completed: 0 };
     }
     progress[task.subject].total++;
-    if (task.status === "completed") {
+    if (task.status === "Completed") {
       progress[task.subject].completed++;
     }
   });
@@ -185,7 +185,7 @@ export function getUpcomingTasks(tasks: Task[], limit: number = 5): Task[] {
   const now = todayUTC();
   return tasks
     .filter(
-      (t) => t.status !== "completed" && !isBeforeUTCDay(t.due_date, now),
+      (t) => t.status !== "Completed" && !isBeforeUTCDay(t.due_date, now),
     )
     .sort(
       (a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime(),
@@ -197,7 +197,7 @@ export function getOverdueTasks(tasks: Task[], limit: number = 5): Task[] {
   const now = todayUTC();
   return tasks
     .filter(
-      (t) => t.status !== "completed" && isBeforeUTCDay(t.due_date, now),
+      (t) => t.status !== "Completed" && isBeforeUTCDay(t.due_date, now),
     )
     .sort(
       (a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime(),
@@ -208,7 +208,7 @@ export function getOverdueTasks(tasks: Task[], limit: number = 5): Task[] {
 export function getDueTodayTasks(tasks: Task[]): Task[] {
   const now = todayUTC();
   return tasks.filter(
-    (t) => t.status !== "completed" && isSameUTCDay(t.due_date, now),
+    (t) => t.status !== "Completed" && isSameUTCDay(t.due_date, now),
   );
 }
 
@@ -218,7 +218,7 @@ export function getUpcomingTests(tasks: Task[], limit: number = 5): Task[] {
     .filter(
       (t) =>
         t.type === "class_test" &&
-        t.status !== "completed" &&
+        t.status !== "Completed" &&
         !isBeforeUTCDay(t.due_date, now),
     )
     .sort(
