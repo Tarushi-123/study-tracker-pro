@@ -83,9 +83,9 @@ export function TaskList({
             />
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mb-1">
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[120px] bg-[#f0e6d8] border-[#e0d5c5] shadow-[inset_2px_2px_4px_#d4c9ba,inset_-2px_-2px_4px_#ffffff]">
+              <SelectTrigger className="w-[110px] sm:w-[120px] shrink-0 bg-[#f0e6d8] border-[#e0d5c5] shadow-[inset_2px_2px_4px_#d4c9ba,inset_-2px_-2px_4px_#ffffff]">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
@@ -96,7 +96,7 @@ export function TaskList({
             </Select>
 
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[130px] bg-[#f0e6d8] border-[#e0d5c5] shadow-[inset_2px_2px_4px_#d4c9ba,inset_-2px_-2px_4px_#ffffff]">
+              <SelectTrigger className="w-[110px] sm:w-[130px] shrink-0 bg-[#f0e6d8] border-[#e0d5c5] shadow-[inset_2px_2px_4px_#d4c9ba,inset_-2px_-2px_4px_#ffffff]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
@@ -108,7 +108,7 @@ export function TaskList({
             </Select>
 
             <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-[130px] bg-[#f0e6d8] border-[#e0d5c5] shadow-[inset_2px_2px_4px_#d4c9ba,inset_-2px_-2px_4px_#ffffff]">
+              <SelectTrigger className="w-[110px] sm:w-[130px] shrink-0 bg-[#f0e6d8] border-[#e0d5c5] shadow-[inset_2px_2px_4px_#d4c9ba,inset_-2px_-2px_4px_#ffffff]">
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
               <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
@@ -124,7 +124,7 @@ export function TaskList({
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="text-[#8b7355] hover:text-[#5a4d3e] hover:bg-[#e8dfd2]"
+                className="shrink-0 text-[#8b7355] hover:text-[#5a4d3e] hover:bg-[#e8dfd2]"
               >
                 <X className="h-4 w-4 mr-1" />
                 Clear
