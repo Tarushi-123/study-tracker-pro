@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, AlertTriangle, Clock, AlertCircle, CalendarClock } from "lucide-react";
-import type { Task, UrgencyLevel } from "@/types";
+import type { Task } from "@/types";
+import type { UrgencyLabel } from "@/lib/task-utils";
 import {
   calculateUrgency,
   getDaysRemaining,
@@ -13,7 +14,7 @@ interface ReminderSystemProps {
 }
 
 interface UrgencyGroup {
-  level: UrgencyLevel;
+  level: string;
   label: string;
   icon: React.ReactNode;
   color: string;
@@ -24,68 +25,83 @@ interface UrgencyGroup {
 
 export function ReminderSystem({ tasks }: ReminderSystemProps) {
   const urgencyGroups = useMemo(() => {
-    const activeTasks = tasks.filter((t) => t.status !== "Completed");
+    const activeTasks = tasks.filter(
+      (t) =>
+        t.status !== "Completed" &&
+        t.due_date &&
+        t.due_date.trim() !== "",
+    );
 
-    const groups: Record<UrgencyLevel, Task[]> = {
-      overdue: [],
-      due_today: [],
-      due_tomorrow: [],
-      due_soon: [],
-      completed: [],
-      normal: [],
+    const groups: Record<string, Task[]> = {
+      Overdue: [],
+      "Due Today": [],
+      "Due Tomorrow": [],
+      "Due Soon": [],
+      Future: [],
     };
 
     activeTasks.forEach((task) => {
-      const urgency = calculateUrgency(task.due_date, task.status);
+      const urgency = calculateUrgency(
+        task.due_date ?? "",
+        task.status ?? "Not Started",
+      );
       const urgencyKey = urgency;
-      groups[urgencyKey as UrgencyLevel].push(task);
+
+      if (!groups[urgencyKey]) {
+        groups[urgencyKey] = [];
+      }
+
+      groups[urgencyKey].push(task);
     });
 
     // Sort each group by due date
     Object.keys(groups).forEach((key) => {
-      const level = key as UrgencyLevel;
-      groups[level].sort(
-        (a, b) =>
-          new Date(a.due_date).getTime() - new Date(b.due_date).getTime(),
-      );
+      const list = groups[key];
+      if (list && list.length > 0) {
+        list.sort((a, b) => {
+          const aDate = new Date(a.due_date).getTime();
+          const bDate = new Date(b.due_date).getTime();
+          return aDate - bDate;
+        });
+      }
     });
 
     const result: UrgencyGroup[] = [
       {
-        level: "overdue",
+        level: "Overdue",
         label: "Overdue",
         icon: <AlertTriangle className="h-4 w-4" />,
         color: "text-gray-700",
         bgColor: "bg-gray-50",
         borderColor: "border-gray-200",
-        tasks: groups.overdue,
+        tasks: groups.Overdue,
       },
       {
-        level: "due_today",
+        level: "Due Today",
         label: "Due Today",
         icon: <AlertCircle className="h-4 w-4" />,
         color: "text-red-700",
         bgColor: "bg-red-50",
         borderColor: "border-red-200",
-        tasks: groups.due_today,
+        tasks: groups["Due Today"],
       },
       {
-        level: "due_tomorrow",
+        level: "Due Tomorrow",
         label: "Due Tomorrow",
         icon: <Clock className="h-4 w-4" />,
         color: "text-orange-700",
         bgColor: "bg-orange-50",
         borderColor: "border-orange-200",
-        tasks: groups.due_tomorrow,
+        tasks: groups["Due Tomorrow"],
       },
       {
-        level: "due_soon",
+        level: "Due Soon",
         label: "Due Soon (3 days)",
         icon: <CalendarClock className="h-4 w-4" />,
         color: "text-amber-700",
         bgColor: "bg-amber-50",
         borderColor: "border-amber-200",
-        tasks: groups.due_soon,
+        tasks: groups["Due Soon"],
       },
     ];
 
@@ -170,11 +186,11 @@ export function ReminderSystem({ tasks }: ReminderSystemProps) {
                     <Badge
                       variant="outline"
                       className={`text-[10px] ml-2 whitespace-nowrap ${
-                        group.level === "overdue"
+                        group.level === "Overdue"
                           ? "bg-gray-100 text-gray-700 border-gray-200"
-                          : group.level === "due_today"
+                          : group.level === "Due Today"
                             ? "bg-red-100 text-red-700 border-red-200"
-                            : group.level === "due_tomorrow"
+                            : group.level === "Due Tomorrow"
                               ? "bg-orange-100 text-orange-700 border-orange-200"
                               : "bg-amber-100 text-amber-700 border-amber-200"
                       }`}
