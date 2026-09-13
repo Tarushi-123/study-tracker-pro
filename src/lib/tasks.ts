@@ -67,6 +67,14 @@ export async function updateTask(
   }>,
 ): Promise<{ data: Task | null; error: string | null }> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase is not configured." };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "Not authenticated" };
+  }
+
   const { data, error } = await supabase
     .from("tasks")
     .update({ ...updates, updated_at: new Date().toISOString() })

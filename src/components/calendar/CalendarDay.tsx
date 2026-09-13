@@ -5,8 +5,6 @@ import type { Event } from "@/types/events";
 import { CalendarItem } from "./CalendarItem";
 import { isSameUTCDay } from "@/lib/task-utils";
 
-
-
 interface CalendarDayProps {
   day: Date;
   tasks: Task[];
@@ -26,12 +24,6 @@ export function CalendarDay({
   onDayClick,
   onItemClick,
 }: CalendarDayProps) {
-  const [localTasks, setLocalTasks] = useState(tasks);
-  const [localEvents, setLocalEvents] = useState(events);
-
-  if (tasks !== localTasks) setLocalTasks(tasks);
-  if (events !== localEvents) setLocalEvents(events);
-
   const dayNumber = day.getUTCDate();
 
   const monthlyTasks = tasks.filter((task) => isSameUTCDay(day, parseISO(task.due_date)));

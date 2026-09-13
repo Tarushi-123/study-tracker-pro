@@ -62,7 +62,7 @@ export default function CalendarPage() {
         getEvents(),
       ]);
       if (taskRes.error) setError(taskRes.error);
-      if (eventRes.error && !error) setError(eventRes.error);
+      if (eventRes.error) setError(eventRes.error);
       setTasks(taskRes.data ?? []);
       setEvents(eventRes.data ?? []);
     } finally {
@@ -182,7 +182,7 @@ export default function CalendarPage() {
   };
 
   const handleItemClick = (item: Task | Event) => {
-    if ("priority" in item && "status" in item) {
+    if ("due_date" in item) {
       openTaskDetailFromEvent(item as Task);
     } else {
       openEventDetailFromEvent(item as Event);
@@ -191,9 +191,9 @@ export default function CalendarPage() {
 
   const upcomingHandler = (item: { kind: "task" | "event"; title: string }) => {
     if (item.kind === "task") {
-      openTaskDetailFromEvent(item.title as unknown as Task);
+      openTaskDetailFromEvent({ id: "", user_id: "", title: item.title, description: "", subject: "", type: "Assignment", due_date: "", priority: "Medium", status: "Not Started", created_at: "", updated_at: "" } as unknown as Task);
     } else {
-      openEventDetailFromEvent(item.title as unknown as Event);
+      openEventDetailFromEvent({ id: "", user_id: "", title: item.title, description: "", event_type: "Other", event_date: "", start_time: null, end_time: null, location: null, event_url: null, reminder: "none", notes: null, created_at: "", updated_at: "" } as unknown as Event);
     }
   };
 
