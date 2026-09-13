@@ -1,37 +1,43 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarTask } from "./CalendarTask";
 import type { Task } from "@/types";
+import type { Event } from "@/types/events";
+import { CalendarItem } from "./CalendarItem";
 import { isSameUTCDay } from "@/lib/task-utils";
 
 interface CalendarDayProps {
   day: Date;
   tasks: Task[];
+  events: Event[];
   isOtherMonth: boolean;
   isToday: boolean;
   onDayClick: (date: Date) => void;
-  onTaskClick: (task: Task) => void;
+  onItemClick: (item: Task | Event) => void;
 }
 
 export function CalendarDay({
   day,
   tasks,
+  events,
   isOtherMonth,
   isToday,
   onDayClick,
-  onTaskClick,
+  onItemClick,
 }: CalendarDayProps) {
   const [localTasks, setLocalTasks] = useState(tasks);
+  const [localEvents, setLocalEvents] = useState(events);
 
-  // Keep tasks in sync if parent re-renders with new tasks
-  if (tasks !== localTasks) {
-    setLocalTasks(tasks);
-  }
+  if (tasks !== localTasks) setLocalTasks(tasks);
+  if (events !== localEvents) setLocalEvents(events);
 
   const dayNumber = day.getUTCDate();
-  const monthlyTasks = tasks.filter(
-    (task) => isSameUTCDay(day, task.due_date),
+
+  const monthlyTasks = tasks.filter((task) => isSameUTCDay(day, task.due_date));
+  const monthlyEvents = events.filter(
+    (event) => isSameUTCDay(day, event.event_date),
   );
+
+  const items = [...monthlyTasks, ...monthlyEvents];
 
   return (
     <div
@@ -58,8 +64,8 @@ export function CalendarDay({
       </button>
 
       <div className="mt-0.5 space-y-0.5 overflow-y-auto max-h-[calc(100%-2rem)]">
-        {monthlyTasks.map((task) => (
-          <CalendarTask key={task.id} task={task} onClick={() => onTaskClick(task)} />
+        {items.map((item) => (
+          <CalendarItem key={item.id} item={item} onClick={() => onItemClick(item)} />
         ))}
       </div>
     </div>

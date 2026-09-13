@@ -114,3 +114,58 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================
+-- Events table
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  event_type TEXT NOT NULL,
+  event_date DATE NOT NULL,
+  start_time TIME,
+  end_time TIME,
+  location TEXT,
+  event_url TEXT,
+  reminder TEXT NOT NULL DEFAULT 'none',
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
+CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date);
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own events"
+  ON events FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own events"
+  ON events FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own events"
+  ON events FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own events"
+  ON events FOR DELETE
+  USING (auth.uid() = user_id);
+
+CREATE OR REPLACE FUNCTION update_events_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_events_updated_at
+  BEFORE UPDATE ON events
+  FOR EACH ROW
+  EXECUTE FUNCTION update_events_updated_at_column();
