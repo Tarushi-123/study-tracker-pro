@@ -37,7 +37,8 @@ export function ReminderSystem({ tasks }: ReminderSystemProps) {
 
     activeTasks.forEach((task) => {
       const urgency = calculateUrgency(task.due_date, task.status);
-      groups[urgency].push(task);
+      const urgencyKey = urgency;
+      groups[urgencyKey as UrgencyLevel].push(task);
     });
 
     // Sort each group by due date

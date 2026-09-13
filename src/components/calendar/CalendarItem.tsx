@@ -12,6 +12,8 @@ import {
 } from "@/lib/task-utils";
 import { getEventTypeColor } from "@/lib/calendar-utils";
 
+
+
 type CalendarItem = Task | Event;
 
 interface CalendarItemProps {

@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import type { Task } from "@/types";
 import type { Event } from "@/types/events";
 import { CalendarItem } from "./CalendarItem";
 import { isSameUTCDay } from "@/lib/task-utils";
+
+
 
 interface CalendarDayProps {
   day: Date;
@@ -32,9 +34,9 @@ export function CalendarDay({
 
   const dayNumber = day.getUTCDate();
 
-  const monthlyTasks = tasks.filter((task) => isSameUTCDay(day, task.due_date));
+  const monthlyTasks = tasks.filter((task) => isSameUTCDay(day, parseISO(task.due_date)));
   const monthlyEvents = events.filter(
-    (event) => isSameUTCDay(day, event.event_date),
+    (event) => isSameUTCDay(day, parseISO(event.event_date)),
   );
 
   const items = [...monthlyTasks, ...monthlyEvents];

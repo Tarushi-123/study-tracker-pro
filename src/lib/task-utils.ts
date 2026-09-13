@@ -1,141 +1,205 @@
-import { parseISO } from "date-fns";
-import type { Task, UrgencyLevel, TaskStats } from "@/types";
+import {
+  parseISO,
+  isSameDay,
+  isTomorrow,
+  isYesterday,
+  isPast,
+  isFuture,
+  differenceInDays,
+} from "date-fns";
 
-/**
- * Timezone-safe date comparison utilities.
- *
- * All date-only comparisons (today/tomorrow/overdue/etc.) are normalized to
- * UTC midnight to avoid off-by-one errors caused by mixing local timezone
- * offsets with UTC-stored dates.
- *
- * When Supabase stores a date-only string like "2024-09-15", it becomes a
- * TIMESTAMPTZ at midnight UTC. These helpers extract the UTC calendar date
- * from both the stored timestamp and the current moment, then compare only
- * the date parts — so a user in UTC-5 and a user in UTC+8 see the same
- * "due today" / "overdue" / "due tomorrow" for the same task.
- */
-
-/** Get the UTC calendar date components of a Date or ISO string. */
-function getUTCDateParts(input: Date | string): {
-  year: number;
-  month: number;
-  day: number;
-} {
-  const d = typeof input === "string" ? parseISO(input) : input;
-  return {
-    year: d.getUTCFullYear(),
-    month: d.getUTCMonth(),
-    day: d.getUTCDate(),
-  };
+// Current date helper with timeout-safe fallback
+function getSafeNowDate(): Date {
+  if (typeof window !== "undefined" && window.Date) {
+    const now = new window.Date();
+    if (!isNaN(now.getTime())) return now;
+  }
+  return new Date();
 }
 
-/** Check if two dates represent the same UTC calendar day. */
-function isSameUTCDay(a: Date | string, b: Date | string): boolean {
-  const pa = getUTCDateParts(a);
-  const pb = getUTCDateParts(b);
-  return pa.year === pb.year && pa.month === pb.month && pa.day === pb.day;
-}
+type UrgencyLabel = "Overdue" | "Due Today" | "Due Tomorrow" | "Due Soon" | "Future";
 
-/** Return the number of UTC calendar days between two dates. Positive = a is after b. */
-function diffUTCDays(a: Date | string, b: Date | string): number {
-  const pa = getUTCDateParts(a);
-  const pb = getUTCDateParts(b);
-  // Normalize both to epoch days
-  const dayA = Date.UTC(pa.year, pa.month, pa.day) / 86400000;
-  const dayB = Date.UTC(pb.year, pb.month, pb.day) / 86400000;
-  return dayA - dayB;
-}
+export type { UrgencyLabel };
 
-/** Check if a's UTC calendar date is strictly before b's UTC calendar date. */
-function isBeforeUTCDay(a: Date | string, b: Date | string): boolean {
-  return diffUTCDays(a, b) < 0;
-}
+export function calculateUrgency(dueDate: string, status: string): UrgencyLabel {
+  const trimmed = dueDate?.trim();
+  if (!trimmed) {
+    return "Future";
+  }
 
-/** Get today's date as a UTC-normalized Date (midnight UTC today). */
-function todayUTC(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-  ));
-}
+  const dueAtUTC = parseISO(trimmed);
+  const now = getSafeNowDate();
 
-export { isSameUTCDay };
+  if (status === "Completed") {
+    return "Future";
+  }
 
-export function calculateUrgency(dueDate: string, status: string): UrgencyLevel {
-  if (status === "Completed") return "completed";
+  if (isSameDay(dueAtUTC, now)) {
+    return "Due Today";
+  }
 
-  const now = todayUTC();
-  const due = parseISO(dueDate);
+  if (isTomorrow(dueAtUTC)) {
+    return "Due Tomorrow";
+  }
 
-  if (isSameUTCDay(due, now)) return "due_today";
+  if (isYesterday(dueAtUTC) || isPast(dueAtUTC)) {
+    return "Overdue";
+  }
 
-  const days = diffUTCDays(due, now);
+  if (isFuture(dueAtUTC)) {
+    const diffInDays = differenceInDays(dueAtUTC, now);
+    if (diffInDays <= 3 && diffInDays > 0) {
+      return "Due Soon";
+    }
+  }
 
-  if (days === 1) return "due_tomorrow";
-  if (days < 0) return "overdue";
-  if (days <= 3) return "due_soon";
-
-  return "normal";
+  return "Future";
 }
 
 export function getDaysRemaining(dueDate: string): number {
-  const now = todayUTC();
-  return diffUTCDays(parseISO(dueDate), now);
+  const dueAtUTC = parseISO(dueDate?.trim());
+  const now = getSafeNowDate();
+  const diffInDays = differenceInDays(dueAtUTC, now);
+  return diffInDays;
 }
 
-export function getUrgencyBadgeClasses(urgency: UrgencyLevel): string {
-  switch (urgency) {
-    case "completed":
-      return "bg-emerald-100 text-emerald-700 border-emerald-200";
-    case "due_today":
-      return "bg-red-100 text-red-700 border-red-200";
-    case "due_tomorrow":
-      return "bg-orange-100 text-orange-700 border-orange-200";
-    case "due_soon":
-      return "bg-amber-100 text-amber-700 border-amber-200";
-    case "overdue":
-      return "bg-gray-100 text-gray-700 border-gray-200";
-    default:
-      return "bg-blue-100 text-blue-700 border-blue-200";
-  }
+// Dashboard helpers
+export function calculateTaskStats(tasks: { status?: string; due_date?: string }[]): {
+  total: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
+  dueToday: number;
+  overdue: number;
+} {
+  let total = 0;
+  let pending = 0;
+  let inProgress = 0;
+  let completed = 0;
+  let dueToday = 0;
+  let overdue = 0;
+
+  tasks.forEach((task) => {
+    const status = (task.status ?? "").trim();
+    if (status === "Completed") {
+      completed++;
+    } else if (status === "In Progress") {
+      inProgress++;
+    } else {
+      pending++;
+    }
+    total++;
+
+    if (status !== "Completed") {
+      const days = getDaysRemaining(task.due_date ?? "");
+      if (days === 0) dueToday++;
+      if (days < 0) overdue++;
+    }
+  });
+
+  return { total, pending, inProgress, completed, dueToday, overdue };
 }
 
-export function getUrgencyLabel(urgency: UrgencyLevel): string {
-  switch (urgency) {
-    case "completed":
-      return "🟢 Completed";
-    case "due_today":
-      return "🔴 Due Today";
-    case "due_tomorrow":
-      return "🟠 Due Tomorrow";
-    case "due_soon":
-      return "🟡 Due Soon";
-    case "overdue":
-      return "⚫ Overdue";
-    default:
-      return "Upcoming";
-  }
+export function getSubjectProgress(
+  tasks: { subject?: string; status?: string }[]
+): Record<string, { completed: number; total: number }> {
+  const map: Record<string, { completed: number; total: number }> = {};
+
+  tasks.forEach((task) => {
+    const subject = (task.subject ?? "Unassigned").trim() || "Unassigned";
+    const status = (task.status ?? "").trim();
+    const entry = map[subject] ?? { completed: 0, total: 0 };
+    entry.total++;
+    if (status === "Completed") entry.completed++;
+    map[subject] = entry;
+  });
+
+  return map;
 }
 
+export function getUpcomingTasks(
+  tasks: { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[],
+  limit: number
+): { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[] {
+  return tasks
+    .filter((task) => (task.status ?? "").trim() !== "Completed")
+    .sort((a, b) => {
+      const aDate = parseISO((a.due_date ?? "").trim());
+      const bDate = parseISO((b.due_date ?? "").trim());
+      return aDate.getTime() - bDate.getTime();
+    })
+    .slice(0, limit);
+}
+
+export function getDueTodayTasks(
+  tasks: { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[]
+): { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[] {
+  return tasks.filter((task) => {
+    if ((task.status ?? "").trim() === "Completed") return false;
+    const days = getDaysRemaining((task.due_date ?? "").trim());
+    return days === 0;
+  });
+}
+
+export function getOverdueTasks(
+  tasks: { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[],
+  limit: number
+): { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[] {
+  return tasks
+    .filter((task) => {
+      if ((task.status ?? "").trim() === "Completed") return false;
+      const days = getDaysRemaining((task.due_date ?? "").trim());
+      return days < 0;
+    })
+    .sort((a, b) => {
+      const aDate = parseISO((a.due_date ?? "").trim());
+      const bDate = parseISO((b.due_date ?? "").trim());
+      return aDate.getTime() - bDate.getTime();
+    })
+    .slice(0, limit);
+}
+
+export function getUpcomingTests(
+  tasks: { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[],
+  limit: number
+): { id?: string; title?: string; subject?: string; type?: string; due_date?: string; status?: string }[] {
+  return tasks
+    .filter((task) => {
+      if ((task.status ?? "").trim() === "Completed") return false;
+      return (task.type ?? "").trim() === "Class Test";
+    })
+    .sort((a, b) => {
+      const aDate = parseISO((a.due_date ?? "").trim());
+      const bDate = parseISO((b.due_date ?? "").trim());
+      return aDate.getTime() - bDate.getTime();
+    })
+    .slice(0, limit);
+}
+
+// Get urgency label for display
+export function getUrgencyLabel(urgency: UrgencyLabel): string {
+  return urgency;
+}
+
+// Priority badge classes
 export function getPriorityClasses(priority: string): string {
   switch (priority) {
     case "High":
-      return "bg-rose-100 text-rose-700 border-rose-200";
+      return "bg-red-100 text-red-700 border-red-200";
     case "Medium":
       return "bg-amber-100 text-amber-700 border-amber-200";
     case "Low":
-      return "bg-sky-100 text-sky-700 border-sky-200";
+      return "bg-blue-100 text-blue-700 border-blue-200";
     default:
       return "bg-gray-100 text-gray-700 border-gray-200";
   }
 }
 
+// Type badge classes
 export function getTypeClasses(type: string): string {
   switch (type) {
     case "Assignment":
-      return "bg-violet-100 text-violet-700 border-violet-200";
+      return "bg-purple-100 text-purple-700 border-purple-200";
     case "Class Test":
       return "bg-cyan-100 text-cyan-700 border-cyan-200";
     default:
@@ -143,97 +207,52 @@ export function getTypeClasses(type: string): string {
   }
 }
 
-export function calculateTaskStats(tasks: Task[]): TaskStats {
-  const now = todayUTC();
-
-  return {
-    total: tasks.length,
-    pending: tasks.filter((t) => t.status !== "Completed").length,
-    inProgress: tasks.filter((t) => t.status === "In Progress").length,
-    completed: tasks.filter((t) => t.status === "Completed").length,
-    dueToday: tasks.filter((t) => {
-      return isSameUTCDay(t.due_date, now) && t.status !== "Completed";
-    }).length,
-    overdue: tasks.filter((t) => {
-      return isBeforeUTCDay(t.due_date, now) && t.status !== "Completed";
-    }).length,
-    upcomingTests: tasks.filter((t) => {
-      return (
-        t.type === "Class Test" &&
-        t.status !== "Completed" &&
-        !isBeforeUTCDay(t.due_date, now)
-      );
-    }).length,
-  };
+// Urgency badge classes
+function buildUrgencyBadgeClassesInner(urgency: UrgencyLabel): Record<string, boolean> {
+  switch (urgency) {
+    case "Overdue":
+      return { "bg-red-500": true, "bg-opacity-10": true, "text-red-600": true };
+    case "Due Today":
+      return { "bg-red-500": true, "bg-opacity-10": true, "text-red-600": true };
+    case "Due Tomorrow":
+      return { "bg-orange-500": true, "bg-opacity-10": true, "text-orange-600": true };
+    case "Due Soon":
+      return { "bg-yellow-500": true, "bg-opacity-10": true, "text-yellow-600": true };
+    case "Future":
+    default:
+      return { "bg-blue-500": true, "bg-opacity-10": true, "text-blue-600": true };
+  }
 }
 
-export function getSubjectProgress(tasks: Task[]): Record<string, { total: number; completed: number }> {
-  const progress: Record<string, { total: number; completed: number }> = {};
-
-  tasks.forEach((task) => {
-    if (!progress[task.subject]) {
-      progress[task.subject] = { total: 0, completed: 0 };
-    }
-    progress[task.subject].total++;
-    if (task.status === "Completed") {
-      progress[task.subject].completed++;
-    }
-  });
-
-  return progress;
+function classesFromConfig(config: Record<string, boolean>): string {
+  return Object.entries(config)
+    .filter(([, value]) => value)
+    .map(([cls]) => cls)
+    .join(" ");
 }
 
-export function getUpcomingTasks(tasks: Task[], limit: number = 5): Task[] {
-  const now = todayUTC();
-  return tasks
-    .filter(
-      (t) => t.status !== "Completed" && !isBeforeUTCDay(t.due_date, now),
-    )
-    .sort(
-      (a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime(),
-    )
-    .slice(0, limit);
+export function getUrgencyBadgeClasses(urgency: UrgencyLabel): string {
+  return classesFromConfig(buildUrgencyBadgeClassesInner(urgency));
 }
 
-export function getOverdueTasks(tasks: Task[], limit: number = 5): Task[] {
-  const now = todayUTC();
-  return tasks
-    .filter(
-      (t) => t.status !== "Completed" && isBeforeUTCDay(t.due_date, now),
-    )
-    .sort(
-      (a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime(),
-    )
-    .slice(0, limit);
-}
-
-export function getDueTodayTasks(tasks: Task[]): Task[] {
-  const now = todayUTC();
-  return tasks.filter(
-    (t) => t.status !== "Completed" && isSameUTCDay(t.due_date, now),
+// Calendar helpers
+export function isSameUTCDay(a: Date, b: Date): boolean {
+  return (
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
   );
 }
 
-export function getUpcomingTests(tasks: Task[], limit: number = 5): Task[] {
-  const now = todayUTC();
-  return tasks
-    .filter(
-      (t) =>
-        t.type === "Class Test" &&
-        t.status !== "Completed" &&
-        !isBeforeUTCDay(t.due_date, now),
-    )
-    .sort(
-      (a, b) => parseISO(a.due_date).getTime() - parseISO(b.due_date).getTime(),
-    )
-    .slice(0, limit);
+// Status helpers
+export function nextStatus(current: string): string {
+  if (current === "Not Started") return "In Progress";
+  if (current === "In Progress") return "Completed";
+  return "Not Started";
 }
 
-export function getRecentTasks(tasks: Task[], limit: number = 5): Task[] {
-  return [...tasks]
-    .sort(
-      (a, b) =>
-        parseISO(b.created_at).getTime() - parseISO(a.created_at).getTime(),
-    )
-    .slice(0, limit);
+export function nextPriority(current: string): string {
+  if (current === "Low") return "Medium";
+  if (current === "Medium") return "High";
+  return "Low";
 }

@@ -2,6 +2,8 @@ import { Tag, Calendar, FlaskConical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getPriorityClasses, getTypeClasses } from "@/lib/task-utils";
 
+
+
 export function CalendarLegend() {
   return (
     <div className="flex flex-wrap items-center gap-4 text-xs text-[#5a4d3e]">

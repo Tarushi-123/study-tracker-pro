@@ -26,6 +26,15 @@ import {
   getTypeClasses,
 } from "@/lib/task-utils";
 
+type DashboardTask = {
+  id: string;
+  title: string;
+  subject: string;
+  type: string;
+  due_date: string;
+  status: string;
+};
+
 interface DashboardContentProps {
   tasks: Task[];
 }
@@ -114,24 +123,24 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
               <div className="space-y-2">
                 {dueTodayTasks.map((task) => (
                   <div
-                    key={task.id}
+                    key={(task as DashboardTask).id}
                     className="flex items-center justify-between p-3 bg-white/70 rounded-xl border border-red-100 shadow-[inset_1px_1px_2px_#ffffff,inset_-1px_-1px_2px_#fecaca]"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-[#3d3429] truncate">
-                          {task.title}
+                          {(task as DashboardTask).title}
                         </p>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] shrink-0 ${getTypeClasses(task.type)}`}
+                          className={`text-[10px] shrink-0 ${getTypeClasses((task as DashboardTask).type)}`}
                         >
-                          {task.type === "Assignment" ? "📝" : "🧪"}{" "}
-                          {task.type === "Assignment" ? "Assignment" : "Class Test"}
+                          {(task as DashboardTask).type === "Assignment" ? "📝" : "🧪"}{" "}
+                          {(task as DashboardTask).type === "Assignment" ? "Assignment" : "Class Test"}
                         </Badge>
                       </div>
                       <p className="text-xs text-[#8b7355] mt-0.5">
-                        {task.subject}
+                        {(task as DashboardTask).subject}
                       </p>
                     </div>
                   </div>
@@ -186,16 +195,16 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
             ) : (
               <div className="space-y-2">
                 {overdueTasks.map((task) => {
-                  const daysOverdue = Math.abs(getDaysRemaining(task.due_date));
+                  const daysOverdue = Math.abs(getDaysRemaining((task as DashboardTask).due_date));
                   return (
                     <div
-                      key={task.id}
+                      key={(task as DashboardTask).id}
                       className="flex items-center justify-between p-3 bg-white/70 rounded-xl border border-amber-100 shadow-[inset_1px_1px_2px_#ffffff,inset_-1px_-1px_2px_#fde68a]"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-[#3d3429] truncate">
-                            {task.title}
+                            {(task as DashboardTask).title}
                           </p>
                           <Badge
                             variant="outline"
@@ -205,7 +214,7 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
                           </Badge>
                         </div>
                         <p className="text-xs text-[#8b7355] mt-0.5">
-                          {task.subject}
+                          {(task as DashboardTask).subject}
                         </p>
                       </div>
                     </div>
@@ -246,20 +255,21 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {upcomingTests.map((task) => {
-                const urgency = calculateUrgency(task.due_date, task.status);
-                const daysLeft = getDaysRemaining(task.due_date);
+                const t = task as DashboardTask;
+                const urgency = calculateUrgency(t.due_date, t.status);
+                const daysLeft = getDaysRemaining(t.due_date);
                 return (
                   <div
-                    key={task.id}
+                    key={t.id}
                     className="flex items-center justify-between p-3 bg-[#f0e6d8] rounded-xl shadow-[inset_2px_2px_4px_#ffffff,inset_-2px_-2px_4px_#d4c9ba]"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#3d3429] truncate">
-                        {task.title}
+                        {t.title}
                       </p>
                       <p className="text-xs text-[#8b7355]">
-                        {task.subject} •{" "}
-                        {new Date(task.due_date).toLocaleDateString("en-US", {
+                        {t.subject} •{" "}
+                        {new Date(t.due_date).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                         })}
@@ -433,21 +443,22 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
           ) : (
             <div className="space-y-2">
               {upcomingTasks.map((task) => {
-                const urgency = calculateUrgency(task.due_date, task.status);
-                const daysLeft = getDaysRemaining(task.due_date);
+                const t = task as DashboardTask;
+                const urgency = calculateUrgency(t.due_date, t.status);
+                const daysLeft = getDaysRemaining(t.due_date);
                 return (
                   <div
-                    key={task.id}
+                    key={t.id}
                     className="flex items-center justify-between p-3 bg-[#f0e6d8] rounded-xl shadow-[inset_2px_2px_4px_#ffffff,inset_-2px_-2px_4px_#d4c9ba]"
                   >
                     <div className="flex-1 min-w-0 flex items-center gap-3">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-[#3d3429] truncate">
-                          {task.title}
+                          {t.title}
                         </p>
                         <p className="text-xs text-[#8b7355]">
-                          {task.subject} •{" "}
-                          {new Date(task.due_date).toLocaleDateString("en-US", {
+                          {t.subject} •{" "}
+                          {new Date(t.due_date).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                           })}
@@ -457,9 +468,9 @@ export function DashboardContent({ tasks }: DashboardContentProps) {
                     <div className="flex items-center gap-2 shrink-0">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${getTypeClasses(task.type)}`}
+                        className={`text-[10px] ${getTypeClasses(t.type)}`}
                       >
-                        {task.type === "Assignment" ? "📝" : "🧪"}
+                        {t.type === "Assignment" ? "📝" : "🧪"}
                       </Badge>
                       <Badge
                         variant="outline"

@@ -1,28 +1,4 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Loader2, Plus } from "lucide-react";
-import { type EventType, type ReminderOption, type Event, EVENT_TYPES, REMINDER_OPTIONS } from "@/types/events";
-import { format, parseISO } from "date-fns";
 import { useEffect, useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +18,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Loader2, Plus, X } from "lucide-react";
+import { type EventType, type ReminderOption, EVENT_TYPES, REMINDER_OPTIONS } from "@/types/events";
+
+type Event = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  event_type: EventType;
+  event_date: string;
+  start_time?: string;
+  end_time?: string;
+  location?: string;
+  event_url?: string;
+  reminder?: ReminderOption;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export { Event };
+import { format, parseISO } from "date-fns";
 
 interface EventFormProps {
   open: boolean;
@@ -104,16 +102,16 @@ export function EventForm({
 
   const prefillFromEdit = () => {
     if (!editEvent) return;
-    setTitle(editEvent.title);
-    setDescription(editEvent.description ?? "");
-    setEventType(editEvent.event_type);
-    setEventDate(editEvent.event_date);
-    setStartTime(editEvent.start_time ?? "");
-    setEndTime(editEvent.end_time ?? "");
-    setLocation(editEvent.location ?? "");
-    setEventUrl(editEvent.event_url ?? "");
-    setReminder(editEvent.reminder ?? "none");
-    setNotes(editEvent.notes ?? "");
+    setTitle((editEvent as unknown as { title?: string }).title ?? "");
+    setDescription((editEvent as unknown as { description?: string }).description ?? "");
+    setEventType((editEvent as unknown as { event_type?: EventType }).event_type ?? "Other");
+    setEventDate((editEvent as unknown as { event_date?: string }).event_date ?? "");
+    setStartTime((editEvent as unknown as { start_time?: string }).start_time ?? "");
+    setEndTime((editEvent as unknown as { end_time?: string }).end_time ?? "");
+    setLocation((editEvent as unknown as { location?: string }).location ?? "");
+    setEventUrl((editEvent as unknown as { event_url?: string }).event_url ?? "");
+    setReminder(((editEvent as unknown as { reminder?: string }).reminder ?? "none") as ReminderOption);
+    setNotes((editEvent as unknown as { notes?: string }).notes ?? "");
   };
 
   useEffect(() => {

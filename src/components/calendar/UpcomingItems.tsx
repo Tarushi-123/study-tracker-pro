@@ -7,9 +7,16 @@ import type { Event } from "@/types/events";
 import { calculateUrgency, getDaysRemaining, getUrgencyBadgeClasses } from "@/lib/task-utils";
 import { getEventTypeColor } from "@/lib/calendar-utils";
 
-type UpcomingItem =
-  | { kind: "task"; task: Task }
-  | { kind: "event"; event: Event };
+interface UpcomingItem {
+  id: string;
+  kind: "task" | "event";
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  colorClass: string;
+  dateLabel: string;
+  sortDate: Date;
+}
 
 interface UpcomingItemsProps {
   tasks: Task[];
@@ -86,9 +93,8 @@ function buildUpcomingItems(tasks: Task[], events: Event[], now: Date): Upcoming
     }
 
     items.push({
-      kind: "task",
-      task,
       id: task.id,
+      kind: "task",
       title: task.title,
       subtitle: `${task.subject} — ${task.type === "Assignment" ? "Assignment" : "Class Test"}`,
       icon: task.type === "Assignment" ? (
@@ -119,9 +125,8 @@ function buildUpcomingItems(tasks: Task[], events: Event[], now: Date): Upcoming
     }
 
     items.push({
-      kind: "event",
-      event,
       id: event.id,
+      kind: "event",
       title: event.title,
       subtitle: event.event_type,
       icon: <FlaskConical className="h-3.5 w-3.5" />,
