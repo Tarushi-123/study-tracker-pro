@@ -219,7 +219,8 @@ export default function Dashboard() {
               onEdit={setEditingTask}
               onDelete={handleDeleteTask}
               onUpdateStatus={async (taskId: string, status: TaskStatus) => {
-                return handleUpdateTask(taskId, { status });
+                await handleUpdateTask(taskId, { status });
+                return { error: null };
               }}
               onAddTask={() => setShowAddForm(true)}
             />

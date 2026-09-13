@@ -113,9 +113,9 @@ export function TaskList({
               </SelectTrigger>
               <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
                 <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="High">High</SelectItem>
               </SelectContent>
             </Select>
 

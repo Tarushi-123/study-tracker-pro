@@ -151,16 +151,7 @@ export function TaskCard({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-[#8b7355] hover:text-[#5a4d3e] hover:bg-[#e8dfd2]"
-              onClick={() => onEdit(task)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-              onClick={() => setShowDeleteDialog(true)}
+              onClick={() => onDelete(task.id)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -182,9 +173,9 @@ export function TaskCard({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-[#faf5ee] border-[#e8dfd2]">
-              <SelectItem value="not_started">Not Started</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="Not Started">Not Started</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         )}
