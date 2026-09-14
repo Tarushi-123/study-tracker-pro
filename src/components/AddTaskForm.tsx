@@ -32,9 +32,15 @@ interface AddTaskFormProps {
     due_date: string;
     priority: TaskPriority;
   }) => Promise<{ error: string | null }>;
-}
-
-export function AddTaskForm({ open, onOpenChange, onSubmit }: AddTaskFormProps) {
+  setInitialValues?: (initial: {
+    title?: string;
+    description?: string;
+    subject?: string;
+    type?: TaskType;
+    due_date?: string;
+    priority?: TaskPriority;
+  } | null) => void;
+}export function AddTaskForm({ open, onOpenChange, onSubmit }: AddTaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
@@ -52,6 +58,24 @@ export function AddTaskForm({ open, onOpenChange, onSubmit }: AddTaskFormProps) 
     setDueDate("");
     setPriority("Medium");
     setError(null);
+  };
+
+  const setInitialValues = (initial: {
+    title?: string;
+    description?: string;
+    subject?: string;
+    type?: TaskType;
+    due_date?: string;
+    priority?: TaskPriority;
+  } | null) => {
+    if (initial) {
+      setTitle(initial.title ?? "");
+      setDescription(initial.description ?? "");
+      setSubject(initial.subject ?? "");
+      setType(initial.type ?? "Assignment");
+      setDueDate(initial.due_date ?? "");
+      setPriority(initial.priority ?? "Medium");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -30,7 +30,7 @@ type UpdateEventInput = Parameters<typeof updateEvent>[1];
 type ItemFilter = "all" | "tasks" | "events";
 type EventFilter = "all" | EventType;
 
-type CalendarView = "calendar" | "task-form" | "event-form" | "date-picker";
+type CalendarView = "calendar" | "date-picker";
 type ItemDetail = { kind: "task"; item: Task } | { kind: "event"; item: Event } | null;
 
 async function refetch(): Promise<void> {
@@ -156,14 +156,6 @@ export default function CalendarPage() {
   const openDatePicker = (date: Date) => {
     setSelectedDate(date);
     setActiveView("date-picker");
-  };
-
-  const openAddTask = () => {
-    setActiveView("task-form");
-  };
-
-  const openAddEvent = () => {
-    setActiveView("event-form");
   };
 
   const closeAddFlow = () => {
@@ -329,16 +321,16 @@ export default function CalendarPage() {
             </Button>
           </div>
         </div>
-      )}
-
-      {/* Add Task Form */}
+      )}      {/* Add Task Form */}
       <AddTaskForm
         open={showAddForm}
         onOpenChange={setShowAddForm}
         onSubmit={async (taskData) => {
+          const effectiveDueDate =
+            selectedDate ? format(selectedDate, "yyyy-MM-dd") : taskData.due_date;
           const result = await handleCreateTask({
             ...taskData,
-            due_date: format(selectedDate ?? new Date(), "yyyy-MM-dd"),
+            due_date: effectiveDueDate,
           });
           refetchAll();
           return result;
